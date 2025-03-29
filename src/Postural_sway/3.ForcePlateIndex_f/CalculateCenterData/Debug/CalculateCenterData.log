@@ -1,0 +1,12 @@
+﻿  main.cpp
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(205,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(206,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(221,23): warning C4476: 'sprintf' : 形式指定子に不明な種類フィールド文字 '_' があります
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(221,2): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(222,11): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(233,2): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(239,2): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(240,2): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(264,3): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\User\kanai\anarysis\3.ForcePlateIndex_f\main.cpp(265,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  CalculateCenterData.vcxproj -> D:\User\kanai\anarysis\3.ForcePlateIndex_f\Debug\ForcePlateIndex.exe

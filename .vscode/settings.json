@@ -2,4 +2,9 @@
     "python.defaultInterpreterPath": ".venv\\Scripts\\python.exe",
     "editor.formatOnSave": false,
     "python.envFile": "${workspaceFolder}/.env",
+    "cSpell.words": [
+        "kanai",
+        "Shima",
+        "subnum"
+    ],
 }

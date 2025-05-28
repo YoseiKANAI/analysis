@@ -97,46 +97,43 @@ def main():
 """
 全体グラフをプロットする関数
 """
-
-
 def whole_gragh_plot(filename, tasklist):
     df = pd.read_excel(filename, sheet_name="正規化後全体")
-    #mean = df.iloc[[1, 2, 3, 6, 7, 8], 1 : task_num + 1]
-    #std = df.iloc[[1, 2, 3, 6, 7, 8], 8 : task_num + 8]
-    
-    mean = df.iloc[8, 1 : len(tasklist) + 1]
-    std = df.iloc[8, 8 : len(tasklist) + 8]
+    mean = df.iloc[[1, 2, 3, 6, 7, 8], 1 : task_num + 1]
+    std = df.iloc[[1, 2, 3, 6, 7, 8], 8 : task_num + 8]
+
+    #mean = df.iloc[8, 1 : len(tasklist) + 1]
+    #std = df.iloc[8, 8 : len(tasklist) + 8]
     index_num = np.arange(1)
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["mathtext.fontset"] = "cm"
     plt.rcParams["font.size"] = 18
 
-    fig = plt.figure(figsize=(2, 4))
+    fig = plt.figure(figsize=(12, 8))
     ax = fig.add_subplot(1, 1, 1)
     for i in range(len(tasklist)):
-        slide = i * 0.3
+        slide = i * 0.22
         err = [
-            #std.iloc[:, i],
-            std[i],
+            std.iloc[:, i],
+            #std[i],
         ]
         ax.bar(
-            index_num + slide,
-            #mean.iloc[:, i],
-            mean[i],
-            width=0.28,
+            np.arange(mean.shape[0]) + slide,  # 修正: x軸をインデックス数分に
+            mean.iloc[:, i],
+            #mean[i],
+            width=0.2,  # 幅も調整
             yerr=err,
             capsize=3,
             label=tasklist[i],
         )
-    
+
     #ax.legend(loc="upper right", fontsize="large", ncol=task_num, frameon=False, handlelength=0.7, columnspacing=1)
     ax.tick_params(direction="in", bottom=False)
-    ax.set_xticks(index_num + 0.3)
+    ax.set_xticks(np.arange(mean.shape[0])+0.2)  # 修正: x軸の位置をインデックス数分
     ax.set_ylim([0.0, 1.6])
     #ax.set_ylabel("Average values normalized \n By NC values")
-    ax.set_xticks([])
+    #ax.set_xticks([])
 
-    """
     ax.set_xticklabels(
         [
             "$L_{COP}$",
@@ -147,7 +144,7 @@ def whole_gragh_plot(filename, tasklist):
             "$S_{\sigma}$",
         ]
     )
-    """
+    
     # plt.show()
     fig.savefig(output_dir + "/plot_whole.svg")
 

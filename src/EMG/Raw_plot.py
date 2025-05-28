@@ -9,17 +9,23 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+"""
+"NC": "D:/User/kanai/Data/241223/sub11/csv/EMG_proc/NC0001.csv",
+"FB": "D:/User/kanai/Data/241223/sub11/csv/EMG_proc/FB0002.csv",
+"D1": "D:/User/kanai/Data/241223/sub11/csv/EMG_proc/D10004.csv"
+"""
 def main():
     input_files = {
-        "NC": "D:/User/kanai/Data/241223/sub11/csv/EMG_proc/NC0001.csv",
-        "FB": "D:/User/kanai/Data/241223/sub11/csv/EMG_proc/FB0002.csv",
+
+        "NC": "D:/User/kanai/Data/241223/sub2/csv/EMG_proc/D10002.csv",
+        "FB": "D:/User/kanai/Data/241223/sub2/csv/EMG_proc/D10005.csv",
         "D1": "D:/User/kanai/Data/241223/sub11/csv/EMG_proc/D10004.csv"
     }
     output_dir = "D:/User/kanai/Data/241223/result_EMG/Raw_plot/proccesed"
     os.makedirs(output_dir, exist_ok=True)
     
     data = {task: pd.read_csv(file) for task, file in input_files.items()}
-    plot_emg(data, output_dir, "sub11")
+    plot_emg(data, output_dir, "sub2")
 
 def plot_emg(data, output_dir, filename):
     plt.rcParams["font.family"] = "Times New Roman"
@@ -28,7 +34,7 @@ def plot_emg(data, output_dir, filename):
 
     columns_to_plot = ["TA_R", "SO_R", "PL_R", "MF_R", "IO_L"]
     tasks = ["NC", "FB", "D1"]
-    colors = {"NC": "tab:blue", "FB": "tab:orange", "D1": "tab:green"}
+    colors = {"NC": "tab:blue", "FB": "tab:blue", "D1": "tab:green"}
     
     for col in columns_to_plot:
         fig, axs = plt.subplots(3, 1, figsize=(4, 4), sharex=True)
@@ -39,7 +45,7 @@ def plot_emg(data, output_dir, filename):
                 axs[i].plot(time, data[task][col], label=f"{task} - {col}", color=colors[task])
                 if task == "NC":
                     max_ylim = data[task][col].max()
-                axs[i].set_ylim(0, max_ylim+10)
+                axs[i].set_ylim(0, 50)
                 #axs[i].set_ylabel("Amplitude")
         #axs[-1].set_xlabel("Time [s]")
         axs[-1].set_xticks([0, time[-1]])  # x軸方向のメモリを0と最後のデータに設定

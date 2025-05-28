@@ -1,13 +1,15 @@
 # %%
 # -*- coding: utf-8 -*-
-# RPとCOPの相互相関解析を行う
-# RPectが先行し，COPに与えている影響を調査する
+# COPとForceの相互相関解析を行う
 """
 Created on Wed May  3 18:41:24 2023
 
 @author: ShimaLab
 """
 
+# "C:/Users/ShimaLab/Desktop/one time/result1"
+# "C:/Users/ShimaLab/Desktop/one time/result2"
+# "C:/Users/ShimaLab/Desktop/one time/output"
 import os
 import csv
 import numpy as np
@@ -15,26 +17,32 @@ import global_value as g
 from glob import glob  # globをインポート
 import pandas as pd  # pandasをインポート
 
+#TODO: この関数使われていないから要チェック
+def compute_correlation_and_write(writer, F, COP, F_file, type, mode):
+    for j in range(3):
+        max_correlation = float('-inf')
+        min_lag = None
+        for k in range(-50, 51):
+            correlation = np.corrcoef(F[:, mode], np.roll(COP[:, j], k))[0, 1]
+            if correlation > max_correlation:
+                max_correlation = correlation
+                min_lag = k
+        lag = min_lag * 10
+        if j == 0:
+            writer.writerow([F_file, type[j], lag, max_correlation])
+        else:
+            writer.writerow(["", type[j], lag, max_correlation])
+
 
 def read_combined_data(file_path):
     """
-    単一のCSVファイルからCOP, COP_velo, COP_acc, RP, RV, RAデータを分割して読み取る
+    単一のCSVファイルからForce, COP, COP_velocityデータを分割して読み取る
     """
     df = pd.read_csv(file_path)
+    force_data = df[["Force X", "Force Y", "Force Z"]]
     cop_data = df[["COP_X", "COP_Y", "COP"]]
-    cop_velo_data = df[["COP_velo_X", "COP_velo_Y", "COP_velo"]]
-    cop_acc_data = df[["COP_acc_X", "COP_acc_Y", "COP_acc"]]
-    RP_data = df[["RP_X", "RP_Y", "RP_Z"]]
-    RV_data = df[["RV_X", "RV_Y", "RV_Z"]]
-    RA_data = df[["RA_X", "RA_Y", "RA_Z"]]
-    return (
-        cop_data.iloc[:2970, :],
-        cop_velo_data.iloc[:2970, :],
-        cop_acc_data.iloc[:2970, :],
-        RP_data.iloc[:2970, :],
-        RV_data.iloc[:2970, :],
-        RA_data.iloc[:2970, :]
-    )
+    cop_velocity_data = df[["COP_velocity_X", "COP_velocity_Y", "COP_velocity"]]
+    return force_data.iloc[:2970, :], cop_data.iloc[:2970, :], cop_velocity_data.iloc[:2970, :]
 
 
 def calculate_correlation(input_dir, ID):
@@ -50,7 +58,7 @@ def calculate_correlation(input_dir, ID):
         attempt = int(file_name[2:4])  # 例: "02"
 
         # データを読み取る
-        cop, cop_velo, cop_acc, RP, RV, RA = read_combined_data(file_path)
+        force, cop, cop_velocity = read_combined_data(file_path)
 
         # キーを作成 (task-attempt)
         key = f"{task}-{attempt}"
@@ -60,32 +68,26 @@ def calculate_correlation(input_dir, ID):
             results_dict[key] = {"task": task, "subject": ID + 1, "attempt": attempt}
 
         # 相関係数とラグを計算
-        for cop_type, df_cop in [("COP", cop), ("COP_velo", cop_velo), ("COP_acc", cop_acc)]:
-            for RP_type, df_RP in [("RP", RP), ("RV", RV), ("RA", RA)]:
-                for cop_axis in ["_X", "_Y", ""]:  # X, Y, ユークリッドノルム
-                    for RP_axis in ["_X", "_Y", "_Z"]:  # X, Y, Z軸
-                        cop_column = cop_type + cop_axis
-                        RP_column = RP_type + RP_axis
-                        if cop_column not in df_cop.columns or RP_column not in df_RP.columns:
-                            continue
+        for force_axis in ["Force X", "Force Y", ]:  # Force X, Y
+            for cop_type, df_cop in [("COP", cop), ("COP_velocity", cop_velocity)]:
+                for cop_axis in ["_X", "_Y", ""]:  # COP_X, COP_Y or COP_velocity_X, COP_velocity_Y
+                    cop_columns = cop_type + cop_axis  # COP_X, COP_Y, COP_velocity_X, COP_velocity_Y
+                    max_correlation = float('-inf')
+                    min_lag = 0
+                    for k in range(0, 51):
+                        correlation = np.corrcoef(force[force_axis], np.roll(df_cop[cop_columns], k))[0, 1]
+                        if correlation > max_correlation:
+                            max_correlation = correlation
+                            min_lag = k
+                    lag = min_lag * 10
 
-                        max_correlation = float('-inf')
-                        #max_correlation = 0
-                        min_lag = 0
-                        for k in range(0, 51):
-                            correlation = np.corrcoef(df_RP[RP_column], np.roll(df_cop[cop_column], k))[0, 1]
-                            if correlation > max_correlation:
-                                max_correlation = correlation
-                                min_lag = k
-                        lag = min_lag * 10
+                    # カラム名を生成
+                    col_r = f"r-{force_axis}-{cop_columns}"
+                    col_lag = f"Lag-{force_axis}-{cop_columns}"
 
-                        # カラム名を生成
-                        col_r = f"r-{cop_column}-{RP_column}"
-                        col_lag = f"Lag-{cop_column}-{RP_column}"
-
-                        # 相関係数とラグを結果辞書に追加
-                        results_dict[key][col_r] = max_correlation
-                        results_dict[key][col_lag] = lag
+                    # 相関係数とラグを結果辞書に追加
+                    results_dict[key][col_r] = max_correlation
+                    results_dict[key][col_lag] = lag
 
     # 辞書をリストに変換
     results = list(results_dict.values())
@@ -133,7 +135,7 @@ def organize_data_for_excel(results):
 
 
 def write_to_excel(all_results, output_dir):
-    output_name = f"{output_dir}/RP_COP_Correlation.xlsx"
+    output_name = f"{output_dir}/Force_COP_Correlation.xlsx"
     with pd.ExcelWriter(output_name) as writer:
         # 各被験者のデータを個別シートに出力
         for ID, results in enumerate(all_results, start=1):
@@ -154,7 +156,7 @@ def main():
     all_results = []
     for ID in range(g.subnum):
         input_dir = f"D:/User/kanai/Data/{g.datafile}/sub{ID+1}/csv/Force_COP/"
-        output_dir = f"D:/User/kanai/Data/{g.datafile}/result_CAA/RP_COP/"
+        output_dir = f"D:/User/kanai/Data/{g.datafile}/result_CAA/COP_Force/"
         os.makedirs(output_dir, exist_ok=True)
         results = calculate_correlation(input_dir, ID)
         all_results.append(results)

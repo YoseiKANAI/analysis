@@ -50,8 +50,16 @@ def calculate_velocity_mean_std(ID):
     results = []
 
     def calculate_velocity(data, fs):
-        cop_filterd = lowpass_filter(data, 50, 1000)
-        return np.diff(cop_filterd) * fs
+        # 速度 = 位置の差分 × サンプリング周波数
+        # ただし、差分は1サンプル分短くなるので、速度系列の長さは元より1短くなる
+        # 物理的な意味での速度（中央差分）にしたい場合は次のように修正
+        dt = 1.0 / fs
+        # 中央差分（端点は前進差分/後退差分）
+        velocity = np.zeros_like(data)
+        velocity[1:-1] = (data[2:] - data[:-2]) / (2 * dt)
+        velocity[0] = (data[1] - data[0]) / dt
+        velocity[-1] = (data[-1] - data[-2]) / dt
+        return velocity
 
     cop_file_list = preparation_cop(ID)
     nc_means = {col: [] for col in cop_cols}  # NCの平均値を格納する辞書

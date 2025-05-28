@@ -24,18 +24,18 @@ def main():
 
 """
 入力パスと出力のパスを作成リストを作成
-"""   
+"""
 def preparation(ID):
     # フォルダのパスを指定
     root_dir = "D:/User/kanai/Data/%s/sub%d/" %(g.datafile, ID+1)
     #root_dir = "D:/User/kanai/Data/%s/balloon_test/" %(g.datafile)
     input_dir = root_dir + "*.tsv"
     file_list = glob.glob(input_dir)
-    
+
     # 出力先フォルダを作成
     output_dir = os.path.join(root_dir, "csv")
     os.makedirs(output_dir, exist_ok=True)
-    
+
     return file_list, output_dir
 
 """
@@ -55,22 +55,22 @@ def tsv_to_csv(f, output_path):
             for row in tsv:
                 if (f.endswith("_2D.tsv")):
                     if (i>6):
-                        writer.writerow(row)                        
+                        writer.writerow(row)
                 elif (f.endswith("_6D.tsv")):
                     if (i>12):
-                        writer.writerow(row)                        
+                        writer.writerow(row)
                 elif (f.endswith(("_a_1.tsv", "_a_2.tsv"))):
                     if (i>12):
-                        writer.writerow(row)                        
+                        writer.writerow(row)
                 elif (f.endswith(("f_1.tsv", "f_2.tsv"))):
                     if (i>25):
-                        writer.writerow(row)                        
+                        writer.writerow(row)
                 else:
                     if (i>10):
                         writer.writerow(row)
                 i = i + 1
             output_file.close()
         input_file.close()
-        
+
 if __name__ == "__main__":
     main()

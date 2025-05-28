@@ -1,5 +1,5 @@
 # %%
- 
+
 # -*- coding: utf-8 -*-
 """
 Created on Wed May  3 18:41:24 2023
@@ -17,13 +17,39 @@ import matplotlib.pyplot as plt
 import global_value as g
 import statsmodels.api as sm
 
-# 出力ファイルのヘッダーを定義する
-header = ["File", "type","Lag[ms]", "Correlation"]
+# COPデータを読み込む関数
+def read_COP_data(cop_file_path):
+    df_COP_0 = pd.read_csv(cop_file_path, skiprows=1, header=None).values
+    df_COP = np.array([np.median(df_COP_0[i:i+10, :], axis=0) for i in range(0, len(df_COP_0), 10)])
+    return df_COP[:2940, :]
 
-# 力覚の名前を定義
-type = ["COP_X", "COP_Y", "COP"]
-Force = ["Force_X", "Foece_Y"]
+# Forceデータを読み込む関数
+def read_force_data(force_file_path):
+    df_F = pd.read_csv(force_file_path, skiprows=1, header=None).values
+    return df_F[:2940, :]
 
+# 相互相関解析を行い、結果をプロットする関数
+def compute_and_plot_ccf(F, COP, plot_size, output_path, col_obj, col):
+    ccf_xy = sm.tsa.ccf(F, COP)[1:plot_size+1]
+    ccf_yx = sm.tsa.ccf(COP, F)[:plot_size]
+    ccf = np.concatenate((ccf_yx[::-1], ccf_xy))
+    x_axis = np.arange(-plot_size, plot_size)
+    
+    plt.figure(figsize=(6, 4), dpi=120)
+    plt.plot(x_axis, ccf)
+    plt.plot(x_axis, np.zeros(plot_size*2), color="k", linewidth=0.5)
+    plt.xlim([-250, 250])
+    plt.ylim([-0.6, 0.6])
+    plt.savefig(output_path)
+    plt.close()
+
+# メイン処理を行う関数
+def process_data():
+    type = ["COP_X", "COP_Y", "COP"]
+    Force = ["Force_X", "Force_Y"]
+    
+    for ID in range(g.subnum):
+        input_dir = f"D:/User/kanai/Data/{g.datafile}/sub{ID+1}/csv/"
 for ID in range(g.subnum):
     for mode in range(2):
         # 出力ファイル名を決定
@@ -33,7 +59,7 @@ for ID in range(g.subnum):
             filename = "ForceY_COP.csv"
         
         subID = "sub%d" %(ID+1)
-            
+
         # フォルダのパスと出力フォルダのパスを指定する
         input_dir = "D:/User/kanai/Data/%s/sub%d/csv/" %(g.datafile, ID+1)
         output_dir = "D:/User/kanai/Data/%s/result_CAA/" %(g.datafile)
@@ -46,27 +72,14 @@ for ID in range(g.subnum):
         # ファイルごとに処理を行う
         for i, (COP_file, F_file) in enumerate(zip(COP_files, F_files)):
             # result1とresult2のファイルパスを取得する
-            COP_file_path = input_dir + 'COP_Standard/' + COP_file
-            F_file_path = input_dir + 'motion/Force/' + F_file
+            cop_file_path = input_dir + 'COP_Standard/' + COP_file
+            f_file_path = input_dir + 'motion/Force/' + F_file
             
             # COPのデータを読み込む
-            with open(COP_file_path) as f:
-                df_COP_0 = np.loadtxt(f, delimiter=',', skiprows=1)
-                
-                df_COP = np.empty([0]) 
-                for i in range (len(df_COP_0)):
-                    if (i%10 == 0):
-                        df_COP = np.append(df_COP, df_COP_0[i, :])
-                
-                df_COP = df_COP.reshape([-1, 3])    
-                df_COP = df_COP[:2940, :]  # 行数を2940に調整する
-                COP = pd.DataFrame(df_COP, columns=type)        
+            COP = read_COP_data(cop_file_path)
             
             # Forceデータを読み込み、列ごとに処理を行う
-            with open(F_file_path) as f:
-                df_F = np.loadtxt(f, delimiter=',', skiprows=1)
-                df_F = df_F[:2940, 0:2]  # 行数を2940に調整する
-                F = pd.DataFrame(df_F, columns=Force)
+            F = read_force_data(f_file_path)
 
             col_obj = Force[mode]
             cols = type
@@ -75,22 +88,6 @@ for ID in range(g.subnum):
 
             for col in cols:
                 x = F.iloc[:, mode]
-                y = COP.loc[:, col]#.values
-                ccf_xy = sm.tsa.ccf(x, y)[1:plot_size+1]
-                ccf_yx = sm.tsa.ccf(y, x)[:plot_size] # (x, y)を基準にしているので、(y, x)はマイナスのラグ 
-                ccf = np.concatenate((ccf_yx[::-1], ccf_xy))
-        
-                x_axis = np.arange(-plot_size, plot_size)
-                fig = plt.figure(figsize=(6, 4), dpi=120)
-                ax = fig.add_subplot(111)
-                ax.plot(x_axis, ccf)
-                ax.plot(x_axis, np.zeros(plot_size*2), color = "k", linewidth=0.5)
-                ax.set_xlim([-250, 250])
-                ax.set_ylim([-0.6, 0.6])
-    #            ax.set_title('{} {} vs {}'.format(F_file, col_obj, col))
-    #            ax.set_xlabel("Lag")
-    #            ax.set_ylabel("CCA")
-                plt.savefig("D:/User/kanai/Data/" +g.datafile + "/result_CAA/CAAlagplot/" + subID + F_file +"_"+ col_obj +"_"+ col +".png")
-#                plt.show()
-                plt.close()
+                y = COP.loc[:, col]
+                compute_and_plot_ccf(x, y, plot_size, subID, F_file, col_obj, col)
                 i=i+1

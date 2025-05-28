@@ -49,12 +49,12 @@ for i in range(g.subnum):
                     df = df.rename(columns={'CH13': 'TA_R'})# 前脛骨筋
                     df = df.rename(columns={'CH14': 'TA_L'})
                     df = df.rename(columns={'CH15': 'PL_R'})# 長腓骨筋
-                    df = df.rename(columns={'CH16': 'PL_L'})                    
+                    df = df.rename(columns={'CH16': 'PL_L'})
                     df = df.rename(columns={'CH1': 'IO_R'})# 内腹斜筋
                     df = df.rename(columns={'CH5': 'IO_L'})
                     df = df.rename(columns={'CH3': 'MF_R'})# 多裂筋
-                    df = df.rename(columns={'CH7': 'MF_L'})     
-                               
+                    df = df.rename(columns={'CH7': 'MF_L'})
+
                 else:
                     # カラム名を変更する
                     df = df.rename(columns={'CH9': 'SO_R'})# ヒラメ筋

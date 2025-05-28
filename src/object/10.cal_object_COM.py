@@ -19,7 +19,7 @@ for ID in range(g.subnum):
     root_dir = "D:/User/kanai/Data/%s/sub%d/csv" %(g.datafile, ID+1)
     output_dir = "D:/User/kanai/Data/%s/sub%d/csv/object" %(g.datafile, ID+1)
     
-    output_dir_gragh = os.path.join(output_dir, "plot")
+    output_dir_gragh = os.path.join(output_dir, "plot_balloon-base")
     # 出力先フォルダを作成
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(output_dir_gragh, exist_ok=True)
@@ -64,9 +64,11 @@ for ID in range(g.subnum):
             
             else:
                 # 6D用のファイルパスを作成
+                
                 filename_6D = filename.replace(".csv", "_6D.csv")
                 input_path_6D = os.path.join(dirpath, filename_6D)
                 df_6D = pd.read_csv(input_path_6D)
+                
                 # ファイルの形式に合わせて呼び出し
                 taskname = filename[0:2]
                 taskname = taskname + " " + "X"
@@ -78,10 +80,15 @@ for ID in range(g.subnum):
                 obj["Z"] = df_6D["Z"]
                 
                 """
-                obj["X"] = df_6D[taskname] - df["finger X"]
-                obj["Y"] = df_6D["Y"] - df["finger Y"]
-                obj["Z"] = df_6D["Z"] - df["finger Z"]
                 
+                obj["X"] = df_6D[taskname] - df["base X"]
+                obj["Y"] = df_6D["Y"] - df["base Y"]
+                obj["Z"] = df_6D["Z"] - df["base Z"]
+                """
+                obj["X"] = df["base X"] - df["finger X"]
+                obj["Y"] = df["base Y"] - df["finger Y"]
+                obj["Z"] = df["base Z"] - df["finger Z"]
+                """
             """
             obj["X"] = obj["X"] / obj["X"].max()
             obj["Y"] = obj["Y"] / obj["Y"].max()

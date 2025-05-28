@@ -21,8 +21,8 @@ import global_value as g
 
 # 0:通常，1:最高最低を除去
 mode = 0
-task_num = len(g.task)
-tasklist = ["NC", "FB", "DBmass", "DBchar", "DW"]
+tasklist = ["NC", "FB", "DBmass"]
+task_num = len(tasklist)  # NC, FB, DBmassのみ
 
 # パスを指定
 input_dir = "D:/User/kanai/Data/%s/result_COP/result/*.xlsx" % (g.datafile)
@@ -38,6 +38,42 @@ os.makedirs(output_dir, exist_ok=True)
 
 
 def main():
+    filename_list = glob.glob(input_dir)
+    filename = filename_list[mode]
+
+    # 標準偏差面積のみ全体グラフを出力（全被験者データをまとめてプロット）
+    sheetname = ["標準偏差面積"]
+    sublist = [f"Sub {i+1}" for i in range(g.subnum)]
+    for index in sheetname:
+        df = pd.read_excel(filename, sheet_name=index, header=None)
+        # すべての被験者・試行をまとめてタスクごとに集約
+        all_data = {task: [] for task in tasklist}
+        for i in range(g.subnum):
+            data_block = df.iloc[(i*g.attempt)+1 : ((i+1)*g.attempt)+1, 10 : 10+task_num].values
+            for t_idx, task in enumerate(tasklist):
+                all_data[task].extend(data_block[:, t_idx])
+        # プロット
+        plt.rcParams["font.family"] = "Times New Roman"
+        plt.rcParams["mathtext.fontset"] = "cm"
+        plt.rcParams["font.size"] = 24
+        plt.figure(figsize=(8, 6))
+        data = [all_data[task] for task in tasklist]
+        means = [np.mean(all_data[task]) for task in tasklist]
+        bplot = plt.boxplot(data, patch_artist=True, labels=tasklist, medianprops=dict(color="black", linewidth=2))
+        for patch, color in zip(bplot['boxes'], ["tab:blue", "tab:orange", "tab:green"]):
+            patch.set_facecolor(color)
+        ax = plt.gca()
+        for i, mean in enumerate(means):
+            ax.plot(i+1, mean, marker='x', color='black', markersize=12, zorder=3)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_ylim([0.0, 2.7])
+        plt.ylabel("SD Area (normalized)")
+        plt.tight_layout()
+        plt.savefig(output_dir + "/plot_all_subjects_std_area.png")
+        plt.close()
+
+    # --- 以下は個別被験者ごとの従来処理 ---
     filename_list = glob.glob(input_dir)
     # 0:通常
     # 1:最高最低を除去
@@ -60,7 +96,7 @@ def main():
         data = np.zeros((g.attempt, task_num, g.subnum))
         
         for i in range(g.subnum):
-            data[:, :, i] = df.iloc[(i*g.attempt)+1 : ((i+1)*g.attempt)+1, 10 : 15]
+            data[:, :, i] = df.iloc[(i*g.attempt)+1 : ((i+1)*g.attempt)+1, 10 : 10+task_num]
         
 
         index_gragh_plot(
@@ -74,7 +110,7 @@ def main():
         output_filename = "/plot_" + index + ".png"
         title = "Average values"
         for i in range(g.subnum):
-            data[:, :, i] = df.iloc[(i*g.attempt)+1 : ((i+1)*g.attempt)+1, 10 : 15]
+            data[:, :, i] = df.iloc[(i*g.attempt)+1 : ((i+1)*g.attempt)+1, 10 : 10 +task_num]
         index_gragh_plot(
             data,
             output_filename,
@@ -91,7 +127,7 @@ def main():
 
 def whole_gragh_plot(filename, tasklist):
     df = pd.read_excel(filename, sheet_name="正規化後全体")
-    mean = df.iloc[[1, 2, 3, 6, 7, 8], 1 : task_num + 1]
+    mean = df.iloc[[1, 2, 3, 6, 7, 8], 1 : len(tasklist)+1]  # 3条件のみ
     index_num = np.arange(len(mean))
     plt.rcParams["font.family"] = "Times New Roman"
     plt.rcParams["mathtext.fontset"] = "cm"
